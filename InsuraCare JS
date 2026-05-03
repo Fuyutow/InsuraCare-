@@ -1,0 +1,153 @@
+// --- DATABASE INITIALIZATION ---
+let records = JSON.parse(localStorage.getItem('clientRecords')) || [];
+let activityLogs = JSON.parse(localStorage.getItem('activityLogs')) || [];
+
+const authScreen = document.getElementById('auth-screen');
+const dashboardScreen = document.getElementById('dashboard-screen');
+const insuranceForm = document.getElementById('insurance-form');
+
+// --- THEME LOGIC ---
+document.getElementById('theme-checkbox').addEventListener('change', () => {
+    document.body.classList.toggle('dark-theme');
+});
+
+// --- LOGGING ENGINE ---
+function logActivity(action) {
+    const timestamp = new Date().toLocaleString();
+    const logMessage = `[${timestamp}] ACTION: ${action}`;
+    activityLogs.unshift(logMessage);
+    if(activityLogs.length > 50) activityLogs.pop();
+    localStorage.setItem('activityLogs', JSON.stringify(activityLogs));
+    renderLogs();
+}
+
+function renderLogs() {
+    const logContainer = document.getElementById('log-list');
+    logContainer.innerHTML = activityLogs.map(log => `<div class="log-entry">${log}</div>`).join('');
+}
+
+// --- AUTHENTICATION FUNCTIONS ---
+
+// Login Function
+document.getElementById('login-btn').addEventListener('click', () => {
+    const user = document.getElementById('username').value;
+    const pass = document.getElementById('password').value;
+
+    if (user === "Admin" && pass === "1234") {
+        authScreen.classList.remove('active-view');
+        authScreen.classList.add('hidden-view');
+        dashboardScreen.classList.remove('hidden-view');
+        
+        logActivity("ADMIN LOGGED IN");
+        renderRecords();
+        renderLogs();
+    } else {
+        const err = document.getElementById('login-error');
+        err.innerText = "Invalid Admin Credentials!";
+        err.style.color = "red";
+    }
+});
+
+// Logout Function (Custom Function as requested)
+function logoutSession() {
+    if(confirm("Are you sure you want to logout?")) {
+        logActivity("ADMIN LOGGED OUT");
+        
+        // Switch Views
+        dashboardScreen.classList.add('hidden-view');
+        authScreen.classList.remove('hidden-view');
+        authScreen.classList.add('active-view');
+
+        // Clear sensitive inputs
+        document.getElementById('username').value = "";
+        document.getElementById('password').value = "";
+        document.getElementById('login-error').innerText = "";
+        
+        resetForm();
+    }
+}
+
+document.getElementById('logout-btn').addEventListener('click', logoutSession);
+
+// --- CRUD ENGINE ---
+
+insuranceForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const name = document.getElementById('client-name').value;
+    const med = document.getElementById('medication').value;
+    const qty = document.getElementById('quantity').value;
+    const price = document.getElementById('price').value;
+    const editIndex = parseInt(document.getElementById('edit-index').value);
+
+    const data = { name, med, qty: Number(qty), price: Number(price) };
+
+    if (editIndex === -1) {
+        records.push(data);
+        logActivity(`CREATED record for Client: ${name}`);
+    } else {
+        records[editIndex] = data;
+        logActivity(`UPDATED record for Client: ${name}`);
+        resetForm();
+    }
+    saveData();
+});
+
+function renderRecords() {
+    const list = document.getElementById('record-list');
+    list.innerHTML = records.map((r, i) => `
+        <tr>
+            <td><strong>${r.name}</strong></td>
+            <td>${r.med}</td>
+            <td>${r.qty}</td>
+            <td>$${(r.qty * r.price).toFixed(2)}</td>
+            <td>
+                <button onclick="editRecord(${i})" style="padding:4px 8px; font-size:11px; width:auto; background:orange">Edit</button>
+                <button onclick="deleteRecord(${i})" style="padding:4px 8px; font-size:11px; width:auto; background:red">Delete</button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function deleteRecord(i) {
+    const clientName = records[i].name;
+    if(confirm(`Delete ${clientName}'s record?`)) {
+        records.splice(i, 1);
+        logActivity(`DELETED record of Client: ${clientName}`);
+        saveData();
+    }
+}
+
+function editRecord(i) {
+    const r = records[i];
+    document.getElementById('client-name').value = r.name;
+    document.getElementById('medication').value = r.med;
+    document.getElementById('quantity').value = r.qty;
+    document.getElementById('price').value = r.price;
+    document.getElementById('edit-index').value = i;
+    document.getElementById('form-title').innerText = "Update Client Record";
+    document.getElementById('save-btn').innerText = "Update Information";
+    document.getElementById('cancel-btn').classList.remove('hidden-view');
+}
+
+function resetForm() {
+    insuranceForm.reset();
+    document.getElementById('edit-index').value = "-1";
+    document.getElementById('form-title').innerText = "Client Insurance Form";
+    document.getElementById('save-btn').innerText = "Save Client Record";
+    document.getElementById('cancel-btn').classList.add('hidden-view');
+}
+
+function saveData() {
+    localStorage.setItem('clientRecords', JSON.stringify(records));
+    renderRecords();
+}
+
+document.getElementById('clear-logs').addEventListener('click', () => {
+    if(confirm("Clear all system logs?")) {
+        activityLogs = [];
+        localStorage.setItem('activityLogs', JSON.stringify(activityLogs));
+        renderLogs();
+    }
+});
+
+document.getElementById('cancel-btn').addEventListener('click', resetForm);
