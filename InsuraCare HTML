@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HealthShield | Premium Portal</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="light-theme">
+
+    <div class="theme-wrapper">
+        <label class="switch">
+            <input type="checkbox" id="theme-checkbox">
+            <span class="slider round"></span>
+        </label>
+        <span id="theme-text">Dark Mode</span>
+    </div>
+
+    <!-- Login View -->
+    <div id="auth-screen" class="active-view">
+        <div class="auth-card">
+            <h1>HealthShield</h1>
+            <p>Admin Access Only</p>
+            <input type="text" id="username" placeholder="Username (Admin)">
+            <input type="password" id="password" placeholder="Password (1234)">
+            <button id="login-btn">Login to Portal</button>
+            <p id="login-error" class="error"></p>
+        </div>
+    </div>
+
+    <!-- Dashboard View -->
+    <div id="dashboard-screen" class="hidden-view">
+        <nav class="navbar">
+            <h2>Client Management System</h2>
+            <button id="logout-btn" class="logout-btn">Logout Session</button>
+        </nav>
+
+        <div class="main-content">
+            <!-- Grid Container for Left and Right -->
+            <div class="dashboard-grid">
+                <!-- Left Side: Form -->
+                <section class="card form-container">
+                    <h3 id="form-title">Client Insurance Form</h3>
+                    <form id="insurance-form">
+                        <input type="hidden" id="edit-index" value="-1">
+                        <input type="text" id="client-name" placeholder="Client Full Name" required>
+                        <input type="text" id="medication" placeholder="Medicine Name" required>
+                        <input type="number" id="quantity" placeholder="Quantity" required>
+                        <input type="number" id="price" placeholder="Price per Unit" step="0.01" required>
+                        <button type="submit" id="save-btn">Save Client Record</button>
+                        <button type="button" id="cancel-btn" class="hidden-view secondary-btn">Cancel Update</button>
+                    </form>
+                </section>
+
+                <!-- Right Side: Table -->
+                <section class="card table-container">
+                    <h3>Current Client Records</h3>
+                    <div class="table-scroll">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Client</th>
+                                    <th>Medicine</th>
+                                    <th>Qty</th>
+                                    <th>Total</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="record-list"></tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Bottom: Activity Logs -->
+            <section class="card logs-section">
+                <div class="logs-header">
+                    <h3>System Activity Logs</h3>
+                    <button id="clear-logs" class="text-btn">Clear History</button>
+                </div>
+                <div id="log-list" class="log-viewer"></div>
+            </section>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
